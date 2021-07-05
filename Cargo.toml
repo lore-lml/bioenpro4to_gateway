@@ -1,0 +1,9 @@
+[package]
+name = "bioenpro4to_gateway"
+version = "0.1.0"
+authors = ["lore-lml <lorenzo.limoli@studenti.polito.it>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
