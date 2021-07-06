@@ -589,7 +589,7 @@ dependencies = [
 [[package]]
 name = "bioenpro4to_channel_manager"
 version = "0.1.0"
-source = "git+https://github.com/lore-lml/bioenpro4to_channel_manager.git#2a802021a674d5127fea290f10529936096cd5b5"
+source = "git+https://github.com/lore-lml/bioenpro4to_channel_manager.git?branch=dev#619f6dc5a4377f990d58d5ade3964b37b86e9587"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1992,15 +1992,6 @@ dependencies = [
 [[package]]
 name = "iota-crypto"
 version = "0.6.0"
-source = "git+https://github.com/iotaledger/crypto.rs?branch=dev#e42be4d028edc520a3d71b5f37bf37f5a128dc32"
-dependencies = [
- "blake2",
- "digest 0.9.0",
-]
-
-[[package]]
-name = "iota-crypto"
-version = "0.6.0"
 source = "git+https://github.com/iotaledger/crypto.rs?rev=e42be4d#e42be4d028edc520a3d71b5f37bf37f5a128dc32"
 dependencies = [
  "blake2",
@@ -2012,6 +2003,15 @@ dependencies = [
  "serde 1.0.126",
  "sha2 0.9.5",
  "unicode-normalization",
+]
+
+[[package]]
+name = "iota-crypto"
+version = "0.6.0"
+source = "git+https://github.com/iotaledger/crypto.rs?branch=dev#e42be4d028edc520a3d71b5f37bf37f5a128dc32"
+dependencies = [
+ "blake2",
+ "digest 0.9.0",
 ]
 
 [[package]]
