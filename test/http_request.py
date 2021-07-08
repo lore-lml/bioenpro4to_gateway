@@ -1,5 +1,5 @@
 import requests as req
-
+from time import time
 
 def main():
     url = "http://localhost:8080"
@@ -11,8 +11,16 @@ def main():
     cred = res.json()
     print(cred)
 
-    res = req.get(f"{url}/id-manager/is-credential-valid", json=cred)
-    print(res.json())
+    # res = req.get(f"{url}/id-manager/is-credential-valid", json=cred)
+    # print(res.json())
+
+    json = {
+        "cred": cred,
+        "day_timestamp": int(time()),
+        "psw": "psw"
+    }
+    res = req.post(f"{url}/id-manager/daily-channel", json=json)
+    print(res.text)
 
 if __name__ == '__main__':
     main()

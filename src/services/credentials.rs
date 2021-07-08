@@ -4,7 +4,6 @@ use iota_identity_lib::iota::{IotaDID, json, Credential};
 use bioenpro4to_channel_manager::channels::Category;
 use std::ops::Deref;
 use iota_identity_lib::api::Validator;
-use anyhow::Error;
 
 
 #[get("/channel-credential")]
@@ -27,7 +26,6 @@ pub async fn get_credential(req: HttpRequest, data: web::Data<AppState>) -> impl
         "channel_authorization":{
             "actor_id": auth.id(),
             "category": &category,
-            "expiration_date": "31/12/2022"
         }
     })).await;
     let cred = match cred{

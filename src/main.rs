@@ -2,12 +2,10 @@ mod services;
 
 use actix_web::{web, get, App, HttpServer, Responder, HttpResponse};
 use serde::Serialize;
-use bioenpro4to_channel_manager::channels::root_channel::RootChannel;
 use anyhow::Result;
-use iota_identity_lib::api::IdentityManager;
-use crate::services::AppState;
+use crate::services::{AppState, EnvConfig};
 use crate::services::credentials::{get_credential, is_credential_valid};
-
+use crate::services::channels::create_daily_channel;
 
 #[derive(Serialize)]
 pub struct Message{
@@ -33,30 +31,27 @@ async fn welcome() -> impl Responder{
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    let mut root = RootChannel::new(false);
-    let info = root.open("psw").await?;
-    println!("Root Channel -> {}:{}", info.channel_id(), info.announce_id());
+    let config = EnvConfig::from_env()?;
+    let url = config.url();
+    let binding_address = config.address();
 
-    let mut manager = IdentityManager::default().await?;
-    let did = manager.create_identity("santer reply").await?.id().as_str().to_string();
-    println!("Santer Reply DID: {}", did);
-
-    let state = web::Data::new(AppState::new(root, manager));
-
-    println!("Open at http://localhost:8080");
+    let state = web::Data::new(AppState::from_config(config).await?);
+    println!("Open at {}", url);
 
     HttpServer::new(move || {
         let credential_scope = web::scope("/id-manager")
             .service(get_credential)
-            .service(is_credential_valid);
+            .service(is_credential_valid)
+            .service(create_daily_channel);
         App::new()
             .app_data(state.clone())
             .service(welcome)
             .service(hello)
             .service(credential_scope)
     })
-        .bind("127.0.0.1:8080")?
+        .bind(binding_address)?
         .run()
         .await?;
+
     Ok(())
 }
