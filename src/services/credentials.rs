@@ -1,9 +1,10 @@
 use actix_web::{web, get, Responder, HttpResponse, HttpRequest};
-use crate::services::{AuthInfo, AppState};
+use crate::services::AuthInfo;
 use iota_identity_lib::iota::{IotaDID, json, Credential};
 use bioenpro4to_channel_manager::channels::Category;
 use std::ops::Deref;
 use iota_identity_lib::api::Validator;
+use crate::environment::AppState;
 
 
 #[get("/channel-credential")]

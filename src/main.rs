@@ -1,27 +1,18 @@
 mod services;
+mod environment;
 
-use actix_web::{web, get, App, HttpServer, Responder, HttpResponse};
-use serde::Serialize;
+use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use anyhow::Result;
-use crate::services::{AppState, EnvConfig};
-use crate::services::credentials::{get_credential, is_credential_valid};
+use serde::Serialize;
+
 use crate::services::channels::create_daily_channel;
+use crate::services::credentials::{get_credential, is_credential_valid};
+use crate::environment::{EnvConfig, AppState};
+
 
 #[derive(Serialize)]
 pub struct Message{
     msg: String,
-}
-
-#[get("/{name}")]
-async fn hello(name: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
-    if name.starts_with("l"){
-        let root = data.root.lock().unwrap();
-        let did = data.identity.lock().unwrap()
-            .get_identity("santer reply").unwrap().id().to_string();
-        let info = format!("{:#?}\n{}", root.channel_info(), did);
-        return HttpResponse::Unauthorized().body(info);
-    }
-    HttpResponse::Ok().json(Message{msg: format!("Hello {}!", name)})
 }
 
 #[get("/")]
@@ -46,7 +37,6 @@ async fn main() -> Result<()> {
         App::new()
             .app_data(state.clone())
             .service(welcome)
-            .service(hello)
             .service(credential_scope)
     })
         .bind(binding_address)?
