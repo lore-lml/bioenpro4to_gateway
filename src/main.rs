@@ -4,6 +4,7 @@ mod environment;
 use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use anyhow::Result;
 use serde::Serialize;
+use iota_identity_lib::iota::json;
 
 use crate::services::channels::create_daily_channel;
 use crate::services::credentials::{get_credential, is_credential_valid};
@@ -16,8 +17,23 @@ pub struct Message{
 }
 
 #[get("/")]
-async fn welcome() -> impl Responder{
-    HttpResponse::Ok().body("Welcome to BioEnPro4To gateway")
+async fn welcome(state: web::Data<AppState>) -> impl Responder{
+    let addr = {
+        let info = state.root.lock().unwrap().channel_info();
+        format!("{}:{}", info.channel_id(), info.announce_id())
+    };
+    let issuer_name = state.config.identity_issuer_name();
+    let issuer_did = {
+        let manager = state.identity.lock().unwrap();
+        manager.get_identity(issuer_name).unwrap().id().as_str().to_string()
+    };
+    let json = json!({
+        "message": "Welcome to BioEnPro4To gateway",
+        "issuer": issuer_name,
+        "issuer_did": &issuer_did,
+        "channel_address": &addr,
+    });
+    HttpResponse::Ok().json(json)
 }
 
 #[actix_web::main]

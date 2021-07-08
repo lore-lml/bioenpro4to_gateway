@@ -1,6 +1,6 @@
 use actix_web::{web, post, Responder, HttpResponse};
 use iota_identity_lib::api::Validator;
-use iota_identity_lib::iota::{Credential, json};
+use iota_identity_lib::iota::Credential;
 use serde::{Serialize, Deserialize};
 use bioenpro4to_channel_manager::utils::{timestamp_to_date, current_time_secs};
 use bioenpro4to_channel_manager::channels::Category;
