@@ -6,7 +6,7 @@ use anyhow::Result;
 use serde::Serialize;
 use iota_identity_lib::iota::json;
 
-use crate::services::channels::create_daily_channel;
+use crate::services::channels::{create_daily_channel, get_daily_channel};
 use crate::services::credentials::{get_credential, is_credential_valid};
 use crate::environment::{EnvConfig, AppState};
 
@@ -48,12 +48,15 @@ async fn main() -> Result<()> {
     HttpServer::new(move || {
         let credential_scope = web::scope("/id-manager")
             .service(get_credential)
-            .service(is_credential_valid)
-            .service(create_daily_channel);
+            .service(is_credential_valid);
+        let channels_scope = web::scope("/channel-manager")
+            .service(create_daily_channel)
+            .service(get_daily_channel);
         App::new()
             .app_data(state.clone())
             .service(welcome)
             .service(credential_scope)
+            .service(channels_scope)
     })
         .bind(binding_address)?
         .run()

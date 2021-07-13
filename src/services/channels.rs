@@ -1,5 +1,5 @@
-use actix_web::{web, post, Responder, HttpResponse};
-use iota_identity_lib::api::Validator;
+use actix_web::{web, post, get, Responder, HttpResponse};
+use iota_identity_lib::api::{Validator, IdentityManager};
 use iota_identity_lib::iota::Credential;
 use serde::{Serialize, Deserialize};
 use bioenpro4to_channel_manager::utils::{timestamp_to_date, current_time_secs};
@@ -7,6 +7,7 @@ use bioenpro4to_channel_manager::channels::Category;
 use chrono::Datelike;
 
 use crate::environment::AppState;
+use std::sync::MutexGuard;
 
 #[derive(Serialize, Deserialize)]
 pub struct ChannelCreationRequest{
@@ -34,36 +35,21 @@ impl CredentialProperties{
 pub async fn create_daily_channel(body: web::Json<ChannelCreationRequest>, data: web::Data<AppState>) -> impl Responder{
     // extract properties from credential
     let cred = &body.cred;
-    let prop = match CredentialProperties::from_credential(&cred){
-        None => return HttpResponse::BadRequest().body("Bad credential properties format"),
-        Some(prop) => prop,
+    let prop = match extract_properties(cred){
+        Ok(prop) => prop,
+        Err(resp) => return resp
     };
 
     // check if the credential is still valid
-    match body.cred.expiration_date{
-        None => return HttpResponse::BadRequest().body("Bad credential format"),
-        Some(timestamp) => {
-            if timestamp.to_unix() <= current_time_secs(){
-                return HttpResponse::Unauthorized().body("Expired credential")
-            }
-        }
-    };
-
-    // validate the credential
     let manager = data.identity.lock().unwrap();
-    let expected_did = manager.get_identity("santer reply").unwrap();
-    let is_valid = match Validator::validate_credential(cred, expected_did.id()).await{
-        Ok(res) => res,
-        Err(_) => return HttpResponse::InternalServerError().body("Error while validating credential")
+    let mut root = data.root.lock().unwrap();
+    match validate_credential(cred, &manager).await{
+        Ok(_) => {},
+        Err(resp) => return resp
     };
-    if !is_valid {
-        return HttpResponse::Unauthorized().body("Invalid Credential")
-    }
 
     // creating the daily channel with the specified date
-    let mut root = data.root.lock().unwrap();
-    let date = timestamp_to_date(body.day_timestamp, false);
-    let (day, month, year) = (date.day() as u16, date.month() as u16, date.year() as u16);
+    let (day, month, year) = extract_date(body.day_timestamp);
 
     let category = match Category::from_string(&prop.category){
         None => return HttpResponse::BadRequest().body("Unknown category"),
@@ -74,8 +60,78 @@ pub async fn create_daily_channel(body: web::Json<ChannelCreationRequest>, data:
         category, &prop.actor_id, &body.psw,
         day, month, year).await{
         Ok(ch) => ch,
-        Err(_) => return HttpResponse::InternalServerError().body("Error during channel creation")
+        Err(e) => return HttpResponse::InternalServerError().body(e.to_string())
     };
 
     HttpResponse::Ok().json(daily_channel.channel_info())
+}
+
+#[get("/daily-channel")]
+pub async fn get_daily_channel(body: web::Json<ChannelCreationRequest>, data: web::Data<AppState>) -> impl Responder{
+    // extract properties from credential
+    let cred = &body.cred;
+    let prop = match extract_properties(cred){
+        Ok(prop) => prop,
+        Err(resp) => return resp
+    };
+
+    // check if the credential is still valid
+    let manager = data.identity.lock().unwrap();
+    let mut root = data.root.lock().unwrap();
+    match validate_credential(cred, &manager).await{
+        Ok(_) => {},
+        Err(resp) => return resp
+    };
+
+    // creating the daily channel with the specified date
+    let (day, month, year) = extract_date(body.day_timestamp);
+
+    let category = match Category::from_string(&prop.category){
+        None => return HttpResponse::BadRequest().body("Unknown category"),
+        Some(c) => c
+    };
+
+    let daily_channel = match root.get_daily_actor_channel(
+        category, &prop.actor_id, &body.psw,
+        day, month, year).await{
+        Ok(ch) => ch,
+        Err(e) => return HttpResponse::InternalServerError().body(e.to_string())
+    };
+
+    HttpResponse::Ok().json(daily_channel.channel_info())
+}
+
+fn extract_properties(cred: &Credential) -> Result<CredentialProperties, HttpResponse>{
+    match CredentialProperties::from_credential(&cred){
+        None => Err(HttpResponse::BadRequest().body("Bad credential properties format")),
+        Some(prop) => Ok(prop),
+    }
+}
+
+async fn validate_credential<'a>(cred: &Credential, manager: &MutexGuard<'a, IdentityManager>) -> Result<(), HttpResponse>{
+    // check if the credential is still valid
+    match cred.expiration_date{
+        None => return Err(HttpResponse::BadRequest().body("Bad credential format")),
+        Some(timestamp) => {
+            if timestamp.to_unix() <= current_time_secs(){
+                return Err(HttpResponse::Unauthorized().body("Expired credential"))
+            }
+        }
+    };
+
+    // validate the credential
+    let expected_did = manager.get_identity("santer reply").unwrap();
+    let is_valid = match Validator::validate_credential(cred, expected_did.id()).await{
+        Ok(res) => res,
+        Err(_) => return Err(HttpResponse::InternalServerError().body("Error while validating credential"))
+    };
+    if !is_valid {
+        return Err(HttpResponse::Unauthorized().body("Invalid Credential"));
+    }
+    Ok(())
+}
+
+fn extract_date(timestamp: i64) -> (u16, u16, u16){
+    let date = timestamp_to_date(timestamp, false);
+    (date.day() as u16, date.month() as u16, date.year() as u16)
 }

@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "4.0.0-beta.5"
+actix-web = "4.0.0-beta.8"
 iota_identity_lib = { git="https://github.com/lore-lml/iota-identity-lib.git" }
 bioenpro4to_channel_manager = { git="https://github.com/lore-lml/bioenpro4to_channel_manager.git", branch="dev2" }
 serde = { version = "^1.0", features=["derive"] }
