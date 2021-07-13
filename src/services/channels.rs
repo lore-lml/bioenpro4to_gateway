@@ -70,7 +70,7 @@ pub async fn create_daily_channel(body: web::Json<ChannelCreationRequest>, data:
         Some(c) => c
     };
 
-    let daily_channel = match root.get_or_create_daily_actor_channel(
+    let daily_channel = match root.new_daily_actor_channel(
         category, &prop.actor_id, &body.psw,
         day, month, year).await{
         Ok(ch) => ch,
