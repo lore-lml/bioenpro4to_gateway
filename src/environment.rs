@@ -7,7 +7,7 @@ use regex::Regex;
 const DEFAULT_PSW: &str = "zH!rRAtmODw*W$k4%0MxuRez^BQQsp";
 
 pub struct EnvConfig{
-    host_address: String,
+    server_addr: String,
     port: u16,
     root_channel_addr: Option<ChannelInfo>,
     root_channel_psw: String,
@@ -19,9 +19,8 @@ pub struct EnvConfig{
 #[allow(dead_code)]
 impl EnvConfig{
     pub fn from_env() -> anyhow::Result<EnvConfig>{
-        dotenv::dotenv().ok();
-        let host_address = {
-            let addr = dotenv::var("HOST_ADDRESS").map_or("127.0.0.1".to_owned(), |x| x);
+        let server_addr = {
+            let addr = dotenv::var("SERVER_ADDR").map_or("127.0.0.1".to_owned(), |x| x);
             if addr == "localhost"{
                 "127.0.0.1".to_owned()
             }else {
@@ -54,11 +53,11 @@ impl EnvConfig{
             }
         });
 
-        Ok(EnvConfig{host_address, port, root_channel_addr, root_channel_psw, identity_issuer_name, mainnet, storage})
+        Ok(EnvConfig{ server_addr, port, root_channel_addr, root_channel_psw, identity_issuer_name, mainnet, storage})
     }
 
     pub fn address(&self) -> String{
-        format!("{}:{}", self.host_address, self.port)
+        format!("{}:{}", self.server_addr, self.port)
     }
     pub fn root_channel_psw(&self) -> &str {
         &self.root_channel_psw
@@ -71,12 +70,12 @@ impl EnvConfig{
     }
     pub fn url(&self) -> String{
         let host = {
-            if self.host_address == "0.0.0.0"{
+            if self.server_addr == "0.0.0.0"{
                 "192.168.1.91"
-            }else if self.host_address == "127.0.0.1"{
+            }else if self.server_addr == "127.0.0.1"{
                 "localhost"
             }else{
-                &self.host_address
+                &self.server_addr
             }
         };
         format!("http://{}:{}", host, self.port)

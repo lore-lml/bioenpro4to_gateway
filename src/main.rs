@@ -1,5 +1,6 @@
 mod services;
 mod environment;
+mod database;
 
 use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use anyhow::Result;
@@ -9,6 +10,10 @@ use iota_identity_lib::iota::json;
 use crate::services::channels::{create_daily_channel, get_daily_channel};
 use crate::services::credentials::{get_credential, is_credential_valid};
 use crate::environment::{EnvConfig, AppState};
+use crate::database::DbConfig;
+use deadpool_postgres::Pool;
+use tokio_pg_mapper::FromTokioPostgresRow;
+use crate::database::db::User;
 
 
 #[derive(Serialize)]
@@ -36,13 +41,36 @@ async fn welcome(state: web::Data<AppState>) -> impl Responder{
     HttpResponse::Ok().json(json)
 }
 
+#[get("/users")]
+async fn users(pool: web::Data<Pool>) -> impl Responder{
+    let client = match pool.get().await{
+        Ok(c) => c,
+        Err(_) => return HttpResponse::InternalServerError().body("error during connection to database")
+    };
+
+    let query = "SELECT * FROM bioenpro4to.users";
+    let stmt = client.prepare(query).await.unwrap();
+    let users: Vec<User> = client.query(&stmt, &[]).await.unwrap()
+        .iter()
+        .map(|row| User::from_row_ref(row).unwrap())
+        .collect();
+
+    HttpResponse::Ok().json(users)
+}
+
+
 #[actix_web::main]
 async fn main() -> Result<()> {
-    let config = EnvConfig::from_env()?;
-    let url = config.url();
-    let binding_address = config.address();
+    dotenv::dotenv().ok();
+    let mut db_config = DbConfig::from_env()?;
+    let pool = web::Data::new(db_config.create_pool()?);
 
-    let state = web::Data::new(AppState::from_config(config).await?);
+    let env_config = EnvConfig::from_env()?;
+    let url = env_config.url();
+    let binding_address = env_config.address();
+
+    let state = web::Data::new(AppState::from_config(env_config).await?);
+
     println!("Open at {}", url);
 
     HttpServer::new(move || {
@@ -54,7 +82,9 @@ async fn main() -> Result<()> {
             .service(get_daily_channel);
         App::new()
             .app_data(state.clone())
+            .app_data(pool.clone())
             .service(welcome)
+            .service(users)
             .service(credential_scope)
             .service(channels_scope)
     })

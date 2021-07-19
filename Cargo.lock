@@ -664,7 +664,7 @@ dependencies = [
 [[package]]
 name = "bioenpro4to_channel_manager"
 version = "0.1.0"
-source = "git+https://github.com/lore-lml/bioenpro4to_channel_manager.git?branch=dev2#b2829bb9eac0654ecc0673bcb632270deb15dd00"
+source = "git+https://github.com/lore-lml/bioenpro4to_channel_manager.git?branch=dev2#6e135f71ac6276e5928e8ff9e40493ef2e26253a"
 dependencies = [
  "anyhow",
  "chrono",
@@ -680,11 +680,16 @@ dependencies = [
  "anyhow",
  "bioenpro4to_channel_manager",
  "chrono",
+ "config 0.11.0",
+ "deadpool-postgres",
  "dotenv",
  "iota_identity_lib",
  "regex",
  "serde 1.0.126",
  "serde_json",
+ "tokio-pg-mapper",
+ "tokio-pg-mapper-derive",
+ "tokio-postgres",
 ]
 
 [[package]]
@@ -933,6 +938,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "config"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b1b9d958c2b1368a663f05538fc1b5975adce1e19f435acceae987aceeeb369"
+dependencies = [
+ "lazy_static",
+ "nom",
+ "rust-ini",
+ "serde 1.0.126",
+ "serde-hjson",
+ "serde_json",
+ "toml",
+ "yaml-rust",
+]
+
+[[package]]
 name = "const-random"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1022,6 +1043,16 @@ name = "crypto-mac"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b584a330336237c1eecd3e94266efb216c56ed91225d634cb2991c5f3fd1aeab"
+dependencies = [
+ "generic-array 0.14.4",
+ "subtle 2.4.1",
+]
+
+[[package]]
+name = "crypto-mac"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4857fd85a0c34b3c3297875b747c1e02e06b6a0ea32dd892d8192b9ce0813ea6"
 dependencies = [
  "generic-array 0.14.4",
  "subtle 2.4.1",
@@ -1120,6 +1151,35 @@ checksum = "a5bbed42daaa95e780b60a50546aa345b8413a1e46f9a40a12907d3598f038db"
 dependencies = [
  "data-encoding",
  "syn 1.0.73",
+]
+
+[[package]]
+name = "deadpool"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef82259c587bceda08349f28ff00f69ae4c897898f254140af6021eb218e8232"
+dependencies = [
+ "async-trait",
+ "config 0.11.0",
+ "num_cpus",
+ "serde 1.0.126",
+ "tokio",
+]
+
+[[package]]
+name = "deadpool-postgres"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1586368a579e26f158266d0a415bcb5df04a64b65913b2a31715d97987bd4d44"
+dependencies = [
+ "async-trait",
+ "config 0.11.0",
+ "deadpool",
+ "futures",
+ "log",
+ "serde 1.0.126",
+ "tokio",
+ "tokio-postgres",
 ]
 
 [[package]]
@@ -1276,6 +1336,12 @@ name = "fake-simd"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
+
+[[package]]
+name = "fallible-iterator"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
 
 [[package]]
 name = "fern"
@@ -1571,6 +1637,16 @@ dependencies = [
 
 [[package]]
 name = "hmac"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1441c6b1e930e2817404b5046f1f989899143a12bf92de603b69f4e0aee1e15"
+dependencies = [
+ "crypto-mac 0.10.0",
+ "digest 0.9.0",
+]
+
+[[package]]
+name = "hmac"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a2a2320eb7ec0ebe8da8f744d7812d9fc4cb4d09344ac01898dbcb6a20ae69b"
@@ -1688,7 +1764,7 @@ dependencies = [
 [[package]]
 name = "identity"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "identity-account",
  "identity-core",
@@ -1700,7 +1776,7 @@ dependencies = [
 [[package]]
 name = "identity-account"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "async-trait",
  "futures",
@@ -1727,7 +1803,7 @@ dependencies = [
 [[package]]
 name = "identity-core"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "base64 0.13.0",
  "bs58",
@@ -1750,7 +1826,7 @@ dependencies = [
 [[package]]
 name = "identity-credential"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "identity-core",
  "identity-did",
@@ -1762,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "identity-derive"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "proc-macro2 1.0.27",
  "quote 1.0.9",
@@ -1773,7 +1849,7 @@ dependencies = [
 [[package]]
 name = "identity-did"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "async-trait",
  "did_url",
@@ -1785,7 +1861,7 @@ dependencies = [
 [[package]]
 name = "identity-diff"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "did_url",
  "identity-derive",
@@ -1797,7 +1873,7 @@ dependencies = [
 [[package]]
 name = "identity-iota"
 version = "0.3.0"
-source = "git+https://github.com/iotaledger/identity.rs?branch=dev#079dc1e52967393ab88638105efc7c2c287c27a3"
+source = "git+https://github.com/iotaledger/identity.rs?branch=dev#b125389215013216e615f706ddc5c2762f659062"
 dependencies = [
  "async-trait",
  "dashmap 4.0.2",
@@ -2643,6 +2719,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
 
 [[package]]
+name = "md-5"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b5a279bb9607f9f53c22d496eade00d138d1bdcccd07d74650387cf94942a15"
+dependencies = [
+ "block-buffer 0.9.0",
+ "digest 0.9.0",
+ "opaque-debug 0.3.0",
+]
+
+[[package]]
 name = "memchr"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2959,6 +3046,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "phf"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dfb61232e34fcb633f43d12c58f83c1df82962dcdfa565a4e866ffc17dafe12"
+dependencies = [
+ "phf_shared",
+]
+
+[[package]]
+name = "phf_shared"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c00cf8b9eafe68dde5e9eaa2cef8ee84a9336a47d566ec55ca16589633b65af7"
+dependencies = [
+ "siphasher",
+]
+
+[[package]]
 name = "pin-project"
 version = "0.4.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3047,6 +3152,35 @@ dependencies = [
  "cpufeatures",
  "opaque-debug 0.3.0",
  "universal-hash",
+]
+
+[[package]]
+name = "postgres-protocol"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff3e0f70d32e20923cabf2df02913be7c1842d4c772db8065c00fcfdd1d1bff3"
+dependencies = [
+ "base64 0.13.0",
+ "byteorder",
+ "bytes",
+ "fallible-iterator",
+ "hmac 0.10.1",
+ "md-5",
+ "memchr",
+ "rand 0.8.4",
+ "sha2 0.9.5",
+ "stringprep",
+]
+
+[[package]]
+name = "postgres-types"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "430f4131e1b7657b0cd9a2b0c3408d77c9a43a042d300b8c77f981dffcc43a2f"
+dependencies = [
+ "bytes",
+ "fallible-iterator",
+ "postgres-protocol",
 ]
 
 [[package]]
@@ -3430,7 +3564,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "abff93ece5a5d3d7f2c54dfba7550657a644c9dc0a871c7ddf8c31381971c41b"
 dependencies = [
  "chrono",
- "config",
+ "config 0.10.1",
  "dashmap 3.11.10",
  "futures",
  "num_cpus",
@@ -3683,9 +3817,9 @@ dependencies = [
 
 [[package]]
 name = "sha-1"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c4cfa741c5832d0ef7fab46cabed29c2aae926db0b11bb2069edd8db5e64e16"
+checksum = "1a0c8611594e2ab4ebbf06ec7cbbf0a99450b8570e96cbf5188b5d5f6ef18d81"
 dependencies = [
  "block-buffer 0.9.0",
  "cfg-if 1.0.0",
@@ -3739,6 +3873,12 @@ name = "signature"
 version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c19772be3c4dd2ceaacf03cb41d5885f2a02c4d8804884918e3a258480803335"
+
+[[package]]
+name = "siphasher"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbce6d4507c7e4a3962091436e56e95290cb71fa302d0d270e32130b75fbff27"
 
 [[package]]
 name = "slab"
@@ -3888,6 +4028,16 @@ name = "stdweb-internal-runtime"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "213701ba3370744dcd1a12960caa4843b3d68b4d1c0a5d575e0d65b2ee9d16c0"
+
+[[package]]
+name = "stringprep"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ee348cb74b87454fff4b551cbf727025810a004f88aeacae7f85b87f4e9a1c1"
+dependencies = [
+ "unicode-bidi",
+ "unicode-normalization",
+]
 
 [[package]]
 name = "stronghold-derive"
@@ -4117,6 +4267,49 @@ dependencies = [
  "proc-macro2 1.0.27",
  "quote 1.0.9",
  "syn 1.0.73",
+]
+
+[[package]]
+name = "tokio-pg-mapper"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93f2b78f3566383ffabc553c72bbb2f129962a54886c5c4d8e8c706f84eceab8"
+dependencies = [
+ "tokio-postgres",
+]
+
+[[package]]
+name = "tokio-pg-mapper-derive"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8548f756cd6eb4069c5af0fb0cec57001fb42bd1fb7330d8f24067ee3fa62608"
+dependencies = [
+ "quote 1.0.9",
+ "syn 1.0.73",
+ "tokio-postgres",
+]
+
+[[package]]
+name = "tokio-postgres"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d2b1383c7e4fb9a09e292c7c6afb7da54418d53b045f1c1fac7a911411a2b8b"
+dependencies = [
+ "async-trait",
+ "byteorder",
+ "bytes",
+ "fallible-iterator",
+ "futures",
+ "log",
+ "parking_lot",
+ "percent-encoding",
+ "phf",
+ "pin-project-lite",
+ "postgres-protocol",
+ "postgres-types",
+ "socket2 0.4.0",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -4619,9 +4812,9 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4756f7db3f7b5574938c3eb1c117038b8e07f95ee6718c0efad4ac21508f1efd"
+checksum = "eeafe61337cb2c879d328b74aa6cd9d794592c82da6be559fdf11493f02a2d18"
 dependencies = [
  "zeroize_derive",
 ]

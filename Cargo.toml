@@ -16,3 +16,10 @@ anyhow = { version = "1.0", default-features = false }
 chrono = "0.4.19"
 dotenv = "0.15.0"
 regex = "^1"
+
+# Postgres Database
+tokio-pg-mapper = "0.2.0"
+tokio-pg-mapper-derive = "0.2.0"
+tokio-postgres = "0.7.2"
+config = "0.11.0"
+deadpool-postgres = "0.9.0"
