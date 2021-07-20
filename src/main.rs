@@ -17,6 +17,7 @@ use crate::database::DbConfig;
 use deadpool_postgres::Pool;
 use tokio_pg_mapper::FromTokioPostgresRow;
 use crate::database::db::User;
+use bioenpro4to_channel_manager::utils::hash_string;
 
 
 #[derive(Serialize)]
@@ -64,36 +65,37 @@ async fn users(pool: web::Data<Pool>) -> impl Responder{
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    dotenv::dotenv().ok();
-    let mut db_config = DbConfig::from_env()?;
-    let pool = web::Data::new(db_config.create_pool()?);
+    // dotenv::dotenv().ok();
+    // let mut db_config = DbConfig::from_env()?;
+    // let pool = web::Data::new(db_config.create_pool()?);
+    //
+    // let env_config = EnvConfig::from_env()?;
+    // let url = env_config.url();
+    // let binding_address = env_config.address();
+    //
+    // let state = web::Data::new(AppState::from_config(env_config).await?);
+    //
+    // println!("Open at {}", url);
+    //
+    // HttpServer::new(move || {
+    //     let credential_scope = web::scope("/id-manager")
+    //         .service(get_credential)
+    //         .service(is_credential_valid);
+    //     let channels_scope = web::scope("/channel-manager")
+    //         .service(create_daily_channel)
+    //         .service(get_daily_channel);
+    //     App::new()
+    //         .app_data(state.clone())
+    //         .app_data(pool.clone())
+    //         .service(welcome)
+    //         .service(users)
+    //         .service(credential_scope)
+    //         .service(channels_scope)
+    // })
+    //     .bind(binding_address)?
+    //     .run()
+    //     .await?;
 
-    let env_config = EnvConfig::from_env()?;
-    let url = env_config.url();
-    let binding_address = env_config.address();
-
-    let state = web::Data::new(AppState::from_config(env_config).await?);
-
-    println!("Open at {}", url);
-
-    HttpServer::new(move || {
-        let credential_scope = web::scope("/id-manager")
-            .service(get_credential)
-            .service(is_credential_valid);
-        let channels_scope = web::scope("/channel-manager")
-            .service(create_daily_channel)
-            .service(get_daily_channel);
-        App::new()
-            .app_data(state.clone())
-            .app_data(pool.clone())
-            .service(welcome)
-            .service(users)
-            .service(credential_scope)
-            .service(channels_scope)
-    })
-        .bind(binding_address)?
-        .run()
-        .await?;
-
+    println!("{}", hash_string("psw"));
     Ok(())
 }
