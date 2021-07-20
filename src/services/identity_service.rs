@@ -6,8 +6,9 @@ use crate::errors::ResponseError;
 use bioenpro4to_channel_manager::channels::Category;
 use iota_identity_lib::api::Validator;
 use serde_json::Value;
+use deadpool_postgres::Pool;
 
-pub async fn get_credential(auth: AuthInfo, state: web::Data<AppState>) -> Result<Credential, ResponseError>{
+pub async fn get_credential(auth: AuthInfo, state: web::Data<AppState>, pool: web::Data<Pool>) -> Result<Credential, ResponseError>{
     /*
     CHECKING ON A DATABASE IF THE ID AND THE DID ARE RELATED
      */

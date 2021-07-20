@@ -1,6 +1,7 @@
 use deadpool_postgres::{Config, Pool};
 use serde::Deserialize;
 
+pub mod models;
 pub mod db;
 
 #[derive(Debug, Clone, Deserialize)]

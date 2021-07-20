@@ -54,6 +54,7 @@ create table bioenpro4to.biocells
     id           varchar(200) not null,
     plant        varchar(200) not null,
     max_capacity integer      not null,
+    did          varchar(200) not null,
     primary key(id)
 );
 
@@ -69,5 +70,5 @@ INSERT INTO bioenpro4to.trucks (plate, did, driver) VALUES ('aa000aa', 'did:iota
 
 INSERT INTO bioenpro4to.scales (plant, did) VALUES ('CIDIU Druento', 'did:iota:test:H7PfugwjWzbexFES2t54tfEi2dmtQ9qEw6UZA8rPhmhg');
 
-INSERT INTO bioenpro4to.biocells (id, plant, max_capacity) VALUES ('d111', 'did:iota:test:BG6DuW2ESTyvLR2CJA4GJAT53NfMJohZYjmfWRiGySeg', 2000);
+INSERT INTO bioenpro4to.biocells (id, plant, max_capacity, did) VALUES ('d111', 'CIDIU Druento', 2000, 'did:iota:test:BG6DuW2ESTyvLR2CJA4GJAT53NfMJohZYjmfWRiGySeg');
 
