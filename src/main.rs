@@ -1,14 +1,17 @@
-mod services;
+mod controllers;
 mod environment;
 mod database;
+mod utils;
+mod services;
+mod errors;
 
 use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use anyhow::Result;
 use serde::Serialize;
 use iota_identity_lib::iota::json;
 
-use crate::services::channels::{create_daily_channel, get_daily_channel};
-use crate::services::credentials::{get_credential, is_credential_valid};
+use crate::controllers::channels::{create_daily_channel, get_daily_channel};
+use crate::controllers::credentials::{get_credential, is_credential_valid};
 use crate::environment::{EnvConfig, AppState};
 use crate::database::DbConfig;
 use deadpool_postgres::Pool;

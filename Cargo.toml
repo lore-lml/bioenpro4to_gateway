@@ -16,6 +16,7 @@ anyhow = { version = "1.0", default-features = false }
 chrono = "0.4.19"
 dotenv = "0.15.0"
 regex = "^1"
+derive_more = "0.99.16"
 
 # Postgres Database
 tokio-pg-mapper = "0.2.0"

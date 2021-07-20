@@ -682,6 +682,7 @@ dependencies = [
  "chrono",
  "config 0.11.0",
  "deadpool-postgres",
+ "derive_more",
  "dotenv",
  "iota_identity_lib",
  "regex",

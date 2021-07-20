@@ -5,7 +5,7 @@ def main():
     url = "http://localhost:8000"
     headers = {
         "id": "m1111",
-        "did": "did:iota:test:2ro3NkbxLwo3BXYARnTeZMQJJwyLtdRvLT5uzGeDpw2m"
+        "did": "did:iota:test:24pa5oWdfF3wgio7nXVVLxms5YJ9gJjceXaFVbtEWvZF"
     }
     res = req.get(f"{url}/id-manager/channel-credential", headers=headers)
     cred = res.json()
