@@ -37,7 +37,7 @@ impl DBManager{
         Ok(users)
     }
 
-    pub async fn get_user(&self, user_id: String) -> Result<User, ResponseError>{
+    pub async fn get_user(&self, user_id: &str) -> Result<User, ResponseError>{
         let client = match self.pool.get().await{
             Ok(c) => c,
             Err(_) => return Err(ResponseError::Internal("error during connection to database".into()))
@@ -47,7 +47,10 @@ impl DBManager{
         let query = query.replace("$table_fields", &User::sql_table_fields());
         let stmt = client.prepare(&query).await.unwrap();
 
-        let row = client.query_one(&stmt, &[&user_id]).await.unwrap();
+        let row = match client.query_one(&stmt, &[&user_id.to_string()]).await {
+            Ok(row) => row,
+            Err(_) => return Err(ResponseError::NotFound(format!("User {} not found", user_id)))
+        };
         match User::from_row_ref(&row){
             Ok(user) => Ok(user),
             Err(_) => Err(ResponseError::NotFound(format!("User {} not found", user_id)))

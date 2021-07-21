@@ -16,10 +16,8 @@ use crate::environment::{EnvConfig, AppState};
 use crate::database::DbConfig;
 use deadpool_postgres::Pool;
 
-use crate::database::models::User;
-use crate::database::db;
 use crate::database::db::DBManager;
-use std::future::Future;
+use std::ops::Deref;
 
 
 #[derive(Serialize)]
@@ -60,7 +58,7 @@ async fn users(pool: web::Data<Pool>) -> impl Responder{
 #[get("/users/{user_id}")]
 async fn user(user_id: web::Path<String>, pool: web::Data<Pool>) -> impl Responder{
     let db_manager = DBManager::new(pool);
-    let user = match db_manager.get_user(user_id.into_inner()).await{
+    let user = match db_manager.get_user(user_id.deref()).await{
         Ok(user) => user,
         Err(err) => return err.error_response()
     };

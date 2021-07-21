@@ -44,3 +44,28 @@ pub struct BioCell{
     max_capacity: i32,
     did: String,
 }
+
+#[allow(dead_code)]
+impl User{
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+    pub fn psw(&self) -> &str {
+        &self.psw
+    }
+    pub fn email(&self) -> &str {
+        &self.email
+    }
+    pub fn first_name(&self) -> &str {
+        &self.first_name
+    }
+    pub fn last_name(&self) -> &str {
+        &self.last_name
+    }
+    pub fn did(&self) -> Option<String> {
+        self.did.clone()
+    }
+    pub fn role(&self) -> i32 {
+        self.role
+    }
+}

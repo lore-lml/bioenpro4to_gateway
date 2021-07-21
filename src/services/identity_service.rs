@@ -7,11 +7,14 @@ use bioenpro4to_channel_manager::channels::Category;
 use iota_identity_lib::api::Validator;
 use serde_json::Value;
 use deadpool_postgres::Pool;
+use crate::database::db::DBManager;
 
 pub async fn get_credential(auth: AuthInfo, state: web::Data<AppState>, pool: web::Data<Pool>) -> Result<Credential, ResponseError>{
-    /*
-    CHECKING ON A DATABASE IF THE ID AND THE DID ARE RELATED
-     */
+    let db_manager = DBManager::new(pool);
+    let user = db_manager.get_user(auth.id()).await?;
+    if user.did().unwrap().to_lowercase() == auth.did().to_lowercase(){
+        return Err(ResponseError::BadRequest(format!("The provided did doesn't correspond to the user {}", user.id())));
+    }
 
     let category = Category::Trucks.to_string();
     let manager = state.identity.lock().unwrap();
