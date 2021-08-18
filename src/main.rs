@@ -5,19 +5,20 @@ mod utils;
 mod services;
 mod errors;
 
-use actix_web::{App, get, HttpResponse, HttpServer, Responder, web, ResponseError};
+use actix_web::{App, get, HttpResponse, HttpServer, Responder, web, ResponseError, Scope};
 use anyhow::Result;
 use serde::Serialize;
 use iota_identity_lib::iota::json;
 
-use crate::controllers::channels::{create_daily_channel, get_daily_channel};
-use crate::controllers::credentials::{get_credential, is_credential_valid};
+use crate::controllers::channels::ChannelController;
+use crate::controllers::credentials::CredentialController;
 use crate::environment::{EnvConfig, AppState};
 use crate::database::DbConfig;
 use deadpool_postgres::Pool;
 
 use crate::database::db::DBManager;
 use std::ops::Deref;
+use crate::controllers::Controller;
 
 
 #[derive(Serialize)]
@@ -84,20 +85,23 @@ async fn main() -> Result<()> {
     println!("Open at {}", url);
 
     HttpServer::new(move || {
-        let credential_scope = web::scope("/id-manager")
-            .service(get_credential)
-            .service(is_credential_valid);
-        let channels_scope = web::scope("/channel-manager")
-            .service(create_daily_channel)
-            .service(get_daily_channel);
-        App::new()
+        let controllers = vec![
+            (CredentialController::scope as fn(&str) -> Scope, "/id-manager"),
+            (ChannelController::scope, "/channel-manager")
+        ];
+
+        let mut app = App::new()
             .app_data(state.clone())
             .app_data(pool.clone())
             .service(welcome)
             .service(users)
-            .service(user)
-            .service(credential_scope)
-            .service(channels_scope)
+            .service(user);
+
+        for (scope, scope_name) in controllers {
+            app = app.service(scope(scope_name));
+        }
+
+        app
     })
         .bind(binding_address)?
         .run()

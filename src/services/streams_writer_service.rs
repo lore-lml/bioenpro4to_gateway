@@ -1,6 +1,6 @@
 use crate::utils::channels::ChannelCreationRequest;
-use crate::utils::{extract_properties, validate_credential, extract_date};
-use bioenpro4to_channel_manager::channels::{ChannelInfo, Category};
+use crate::utils::{extract_properties, validate_credential, extract_date, match_category};
+use bioenpro4to_channel_manager::channels::ChannelInfo;
 use crate::errors::ResponseError;
 use actix_web::web;
 use crate::environment::AppState;
@@ -17,10 +17,7 @@ pub async fn create_daily_channel(request: ChannelCreationRequest, state: web::D
     // creating the daily channel with the specified date
     let (day, month, year) = extract_date(request.day_timestamp());
 
-    let category = match Category::from_string(prop.category()){
-        None => return Err(ResponseError::BadRequest("Unknown category".into())),
-        Some(c) => c
-    };
+    let category = match_category(prop.category())?;
 
     match root.new_daily_actor_channel(
         category, prop.actor_id(), &request.psw(),
@@ -43,10 +40,7 @@ pub async fn get_daily_channel(request: ChannelCreationRequest, state: web::Data
     // creating the daily channel with the specified date
     let (day, month, year) = extract_date(request.day_timestamp());
 
-    let category = match Category::from_string(prop.category()){
-        None => return Err(ResponseError::BadRequest("Unknown category".into())),
-        Some(c) => c
-    };
+    let category = match_category(prop.category())?;
 
     match root.get_daily_actor_channel(
         category, prop.actor_id(), request.psw(),

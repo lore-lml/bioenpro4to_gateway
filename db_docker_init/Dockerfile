@@ -1,7 +1,6 @@
 # Build and run:
 #   docker build -t bioenpro4to/postgres:0.1 .
 #   docker run -d -p 5432:5432 --name postgres-bioenpro4to bioenpro4to/postgres:0.1
-#   ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[localhost]:2222"
 FROM postgres:13-alpine
 ENV POSTGRES_USER admin
 ENV POSTGRES_PASSWORD bioenpro4to

@@ -1,28 +1,72 @@
-use actix_web::{web, post, get, HttpResponse, ResponseError};
+use actix_web::{web, post, get, HttpResponse, ResponseError, Scope};
 
-use crate::services::streams_service;
+use crate::services::{streams_writer_service, streams_reader_service};
 use crate::environment::AppState;
 use crate::utils::channels::ChannelCreationRequest;
+use serde_json::Value;
+use std::collections::HashMap;
+use crate::controllers::Controller;
 
+pub struct ChannelController;
+impl Controller for ChannelController{
+    fn scope(scope_name: &str) -> Scope{
+        web::scope(scope_name)
+            .service(create_daily_channel)
+            .service(get_daily_channel)
+            .service(actors_of_category)
+            .service(channels_of_actor)
+            .service(messages_of_channel_of_actor)
+    }
+}
 
 #[post("/daily-channel")]
-pub async fn create_daily_channel(body: web::Json<ChannelCreationRequest>,
+async fn create_daily_channel(body: web::Json<ChannelCreationRequest>,
                                   data: web::Data<AppState>) -> HttpResponse{
-    let info = match streams_service::create_daily_channel(body.into_inner(), data).await{
+    let info = match streams_writer_service::create_daily_channel(body.into_inner(), data).await{
         Ok(info) => info,
         Err(err) => return err.error_response()
     };
-    HttpResponse::Ok().json(info)
+    HttpResponse::Created().json(info)
 }
 
 #[get("/daily-channel")]
-pub async fn get_daily_channel(body: web::Json<ChannelCreationRequest>,
+async fn get_daily_channel(body: web::Json<ChannelCreationRequest>,
                                data: web::Data<AppState>) ->  HttpResponse{
-    let info = match streams_service::get_daily_channel(body.into_inner(), data).await{
+    let info = match streams_writer_service::get_daily_channel(body.into_inner(), data).await{
         Ok(info) => info,
         Err(err) => return err.error_response()
     };
-    HttpResponse::Ok().json(info)
+    HttpResponse::Found().json(info)
 }
 
+#[get("/categories/{category}/actors")]
+async fn actors_of_category(category: web::Path<String>, state: web::Data<AppState>) -> HttpResponse{
+    match streams_reader_service::actors_of_category(&category, state){
+        Ok(actors) => HttpResponse::Found().json(&actors),
+        Err(err) => return err.error_response()
+    }
+}
 
+#[get("/categories/{category}/actors/{actor_id}")]
+async fn channels_of_actor(params: web::Path<(String, String)>, state: web::Data<AppState>) -> HttpResponse{
+    let (category, actor_id) = params.into_inner();
+    match streams_reader_service::channels_of_actor(&category, &actor_id, state){
+        Ok(daily_ch) => HttpResponse::Found().json(&daily_ch),
+        Err(err) => return err.error_response()
+    }
+}
+
+#[get("/categories/{category}/actors/{actor_id}/date/{date}")]
+async fn messages_of_channel_of_actor(params: web::Path<(String, String, String)>, state: web::Data<AppState>) -> HttpResponse{
+    let (category, actor_id, date) = params.into_inner();
+    let date = date.replace("-", "/");
+    match streams_reader_service::messages_of_channel_of_actor(&category, &actor_id, &date, state).await{
+        Ok(msgs) => {
+            let msgs: Vec<HashMap<String, Value>> = msgs.iter()
+                .map(|x| serde_json::from_str::<HashMap<String, Value>>(x).unwrap())
+                .collect();
+            HttpResponse::Found().json(&msgs)
+        },
+        Err(err) => return err.error_response()
+    }
+}
