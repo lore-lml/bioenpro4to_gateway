@@ -3,8 +3,6 @@ use actix_web::{web, post, get, HttpResponse, ResponseError, Scope};
 use crate::services::{streams_writer_service, streams_reader_service};
 use crate::environment::AppState;
 use crate::utils::channels::ChannelCreationRequest;
-use serde_json::Value;
-use std::collections::HashMap;
 use crate::controllers::Controller;
 
 pub struct ChannelController;
@@ -61,12 +59,7 @@ async fn messages_of_channel_of_actor(params: web::Path<(String, String, String)
     let (category, actor_id, date) = params.into_inner();
     let date = date.replace("-", "/");
     match streams_reader_service::messages_of_channel_of_actor(&category, &actor_id, &date, state).await{
-        Ok(msgs) => {
-            let msgs: Vec<HashMap<String, Value>> = msgs.iter()
-                .map(|x| serde_json::from_str::<HashMap<String, Value>>(x).unwrap())
-                .collect();
-            HttpResponse::Found().json(&msgs)
-        },
+        Ok(msgs) => HttpResponse::Found().json(&msgs),
         Err(err) => return err.error_response()
     }
 }

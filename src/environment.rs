@@ -3,16 +3,18 @@ use bioenpro4to_channel_manager::channels::root_channel::RootChannel;
 use iota_identity_lib::api::{IdentityManager, Storage};
 use bioenpro4to_channel_manager::channels::ChannelInfo;
 use regex::Regex;
+use crate::utils::message_cache::MessageCache;
 
 const DEFAULT_PSW: &str = "zH!rRAtmODw*W$k4%0MxuRez^BQQsp";
 
 pub struct EnvConfig{
     server_addr: String,
-    port: u16,
+    server_port: u16,
+    mainnet: bool,
     root_channel_addr: Option<ChannelInfo>,
     root_channel_psw: String,
+    msgs_update_time: i64,
     identity_issuer_name: String,
-    mainnet: bool,
     storage: Storage,
 }
 
@@ -20,44 +22,51 @@ pub struct EnvConfig{
 impl EnvConfig{
     pub fn from_env() -> anyhow::Result<EnvConfig>{
         let server_addr = {
-            let addr = dotenv::var("SERVER_ADDR").map_or("127.0.0.1".to_owned(), |x| x);
+            let addr = dotenv::var("SERVER.ADDR").map_or("127.0.0.1".to_owned(), |x| x);
             if addr == "localhost"{
                 "127.0.0.1".to_owned()
             }else {
                 addr
             }
         };
-        let port: u16 = dotenv::var("PORT").map_or(8080, |x| x.parse().map_or(8080, |y| y));
-        let root_channel_addr = dotenv::var("ROOT_CHANNEL_ADDR").map_or(None, |x| {
+        let server_port: u16 = dotenv::var("SERVER.PORT").map_or(8080, |x| x.parse().map_or(8080, |y| y));
+
+        let mainnet = dotenv::var("IOTA.MAINNET").map_or(false, |x| x.parse().map_or(false, |y| y));
+        let root_channel_addr = dotenv::var("IOTA.ROOT_CHANNEL.ADDR").map_or(None, |x| {
             let re = Regex::new(r".+:.+").unwrap();
             if re.is_match(&x){
                 let vec: Vec<&str> = x.split(":").collect();
                 Some(ChannelInfo::new(vec[0].to_string(), vec[1].to_string()))
             }else{
-                eprintln!("ROOT_CHANNEL_ADDR bad format: expected <channel_id>:<announce_id>");
+                eprintln!("IOTA.ROOT_CHANNEL.ADDR bad format: expected <channel_id>:<announce_id>");
                 eprintln!("Creating new root channel ...");
                 None
             }
         });
-        let root_channel_psw = dotenv::var("ROOT_CHANNEL_PSW").map_or(DEFAULT_PSW.to_owned(), |x| x);
-        let identity_issuer_name = dotenv::var("IDENTITY_ISSUER_NAME").map_or("unknown".to_owned(), |x| x);
-        let mainnet = dotenv::var("MAINNET").map_or(false, |x| x.parse().map_or(false, |y| y));
-        let storage= dotenv::var("IDENTITY_STORAGE").map_or(Storage::Memory, |x| {
+        let root_channel_psw = dotenv::var("IOTA.ROOT_CHANNEL.PSW").map_or(DEFAULT_PSW.to_owned(), |x| x);
+        let msgs_update_time: i64 = dotenv::var("IOTA.MESSAGES_UPDATE_TIME").map_or(1, |x| x.parse().map_or(1, |y| y));
+
+        let identity_issuer_name = dotenv::var("IOTA.IDENTITY.ISSUER_NAME").map_or("unknown".to_owned(), |x| x);
+        let storage= dotenv::var("IOTA.IDENTITY.STORAGE.TYPE").map_or(Storage::Memory, |x| {
             match x.as_str(){
                 "stronghold" => {
-                    let dir = dotenv::var("IDENTITY_STORAGE_DIR").map_or("./state".to_owned(), |x| x);
-                    let psw = dotenv::var("IDENTITY_STORAGE_PSW").map_or(DEFAULT_PSW.to_owned(), |x| x);
+                    let dir = dotenv::var("IOTA.IDENTITY.STORAGE.DIR").map_or("./state".to_owned(), |x| x);
+                    let psw = dotenv::var("IOTA.IDENTITY.STORAGE.PSW").map_or(DEFAULT_PSW.to_owned(), |x| x);
                     Storage::Stronghold(dir, Some(psw))
                 }
                 _ => Storage::Memory,
             }
         });
 
-        Ok(EnvConfig{ server_addr, port, root_channel_addr, root_channel_psw, identity_issuer_name, mainnet, storage})
+        Ok(EnvConfig{
+            server_addr, server_port,
+            mainnet, root_channel_addr, root_channel_psw, msgs_update_time,
+            identity_issuer_name, storage,
+        })
     }
 
     pub fn address(&self) -> String{
-        format!("{}:{}", self.server_addr, self.port)
+        format!("{}:{}", self.server_addr, self.server_port)
     }
     pub fn root_channel_psw(&self) -> &str {
         &self.root_channel_psw
@@ -78,13 +87,14 @@ impl EnvConfig{
                 &self.server_addr
             }
         };
-        format!("http://{}:{}", host, self.port)
+        format!("http://{}:{}", host, self.server_port)
     }
 }
 
 pub struct AppState{
     pub root: Mutex<RootChannel>,
     pub identity: Mutex<IdentityManager>,
+    pub msg_cache: Mutex<MessageCache>,
     pub config: EnvConfig,
 }
 
@@ -107,7 +117,7 @@ impl AppState{
             .main_net(config.mainnet)
             .build()
             .await?;
-        let mut state = AppState { root: Mutex::new(root), identity: Mutex::new(identity), config };
+        let mut state = AppState { root: Mutex::new(root), identity: Mutex::new(identity), msg_cache: Mutex::new(MessageCache::new(config.mainnet, config.msgs_update_time)), config };
         state.init(open).await?;
         Ok(state)
     }
