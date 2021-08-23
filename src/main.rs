@@ -19,6 +19,7 @@ use deadpool_postgres::Pool;
 use crate::database::db::DBManager;
 use std::ops::Deref;
 use crate::controllers::Controller;
+use actix_cors::Cors;
 
 
 #[derive(Serialize)]
@@ -91,6 +92,7 @@ async fn main() -> Result<()> {
         ];
 
         let mut app = App::new()
+            .wrap(Cors::default().allow_any_origin())
             .app_data(state.clone())
             .app_data(pool.clone())
             .service(welcome)
