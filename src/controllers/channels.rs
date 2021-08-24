@@ -4,6 +4,7 @@ use crate::services::{streams_writer_service, streams_reader_service};
 use crate::environment::AppState;
 use crate::utils::channels::ChannelCreationRequest;
 use crate::controllers::Controller;
+use iota_identity_lib::iota::json;
 
 pub struct ChannelController;
 impl Controller for ChannelController{
@@ -30,11 +31,13 @@ async fn create_daily_channel(body: web::Json<ChannelCreationRequest>,
 #[get("/daily-channel")]
 async fn get_daily_channel(body: web::Json<ChannelCreationRequest>,
                                data: web::Data<AppState>) ->  HttpResponse{
-    let info = match streams_writer_service::get_daily_channel(body.into_inner(), data).await{
+    let base64 = match streams_writer_service::get_daily_channel(body.into_inner(), data).await{
         Ok(info) => info,
         Err(err) => return err.error_response()
     };
-    HttpResponse::Found().json(info)
+    HttpResponse::Found().json(json!({
+        "channel_base64": &base64
+    }))
 }
 
 #[get("/categories/{category}/actors")]

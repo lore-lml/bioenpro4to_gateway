@@ -27,7 +27,7 @@ pub async fn create_daily_channel(request: ChannelCreationRequest, state: web::D
     }
 }
 
-pub async fn get_daily_channel(request: ChannelCreationRequest, state: web::Data<AppState>) -> Result<ChannelInfo, ResponseError>{
+pub async fn get_daily_channel(request: ChannelCreationRequest, state: web::Data<AppState>) -> Result<String, ResponseError>{
     // extract properties from credential
     let cred = request.cred();
     let prop = extract_properties(cred)?;
@@ -42,10 +42,11 @@ pub async fn get_daily_channel(request: ChannelCreationRequest, state: web::Data
 
     let category = match_category(prop.category())?;
 
-    match root.get_daily_actor_channel(
-        category, prop.actor_id(), request.psw(),
-        day, month, year).await{
-        Ok(ch) => Ok(ch.channel_info()),
-        Err(e) => Err(ResponseError::Internal(e.to_string()))
-    }
+    root.serialize_daily_actor_channel(
+        category,
+        prop.actor_id(),
+        request.psw(),
+        day, month, year
+    ).await
+        .map_err(|x| ResponseError::BadRequest(x.to_string()))
 }
