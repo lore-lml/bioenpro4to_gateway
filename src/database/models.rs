@@ -18,6 +18,7 @@ pub struct User{
     first_name: String,
     last_name: String,
     address: String,
+    fiscal_code: String,
     phone_number: String,
     did: Option<String>,
     role: i32,
@@ -69,5 +70,53 @@ impl User{
     }
     pub fn role(&self) -> i32 {
         self.role
+    }
+    pub fn address(&self) -> &str {
+        &self.address
+    }
+    pub fn fiscal_code(&self) -> &str {
+        &self.fiscal_code
+    }
+    pub fn phone_number(&self) -> &str {
+        &self.phone_number
+    }
+}
+
+#[allow(dead_code)]
+impl Truck{
+    pub fn plate(&self) -> &str {
+        &self.plate
+    }
+    pub fn did(&self) -> &str {
+        &self.did
+    }
+    pub fn driver(&self) -> &str {
+        &self.driver
+    }
+}
+
+#[allow(dead_code)]
+impl Scale{
+    pub fn plant(&self) -> &str {
+        &self.plant
+    }
+    pub fn did(&self) -> &str {
+        &self.did
+    }
+}
+
+#[allow(dead_code)]
+impl BioCell{
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+    pub fn plant(&self) -> &str {
+        &self.plant
+    }
+    pub fn max_capacity(&self) -> i32 {
+        self.max_capacity
+    }
+    pub fn did(&self) -> &str {
+        &self.did
     }
 }

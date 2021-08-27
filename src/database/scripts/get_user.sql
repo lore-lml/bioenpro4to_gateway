@@ -1,1 +1,1 @@
-SELECT $table_fields FROM bioenpro4to.users WHERE id=$1;
+SELECT $table_fields FROM bioenpro4to.users WHERE LOWER(id)=LOWER($1);

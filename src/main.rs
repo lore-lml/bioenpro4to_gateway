@@ -43,6 +43,10 @@ async fn welcome(state: web::Data<AppState>) -> impl Responder{
         "issuer": issuer_name,
         "issuer_did": &issuer_did,
         "channel_address": &addr,
+        "company_info": {
+            "name": "Santer Reply Spa.",
+            "address": "Via Cardinal Massaia, 83"
+        }
     });
     HttpResponse::Ok().json(json)
 }

@@ -18,6 +18,7 @@ chrono = "0.4.19"
 dotenv = "0.15.0"
 regex = "^1"
 derive_more = "0.99.16"
+rand = "0.8.4"
 
 # Postgres Database
 tokio-pg-mapper = "0.2.0"

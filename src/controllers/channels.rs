@@ -21,11 +21,10 @@ impl Controller for ChannelController{
 #[post("/daily-channel")]
 async fn create_daily_channel(body: web::Json<ChannelCreationRequest>,
                                   data: web::Data<AppState>) -> HttpResponse{
-    let info = match streams_writer_service::create_daily_channel(body.into_inner(), data).await{
-        Ok(info) => info,
+    match streams_writer_service::create_daily_channel(body.into_inner(), data).await{
+        Ok(_) => HttpResponse::Created().finish(),
         Err(err) => return err.error_response()
-    };
-    HttpResponse::Created().json(info)
+    }
 }
 
 #[get("/daily-channel")]

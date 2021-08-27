@@ -1,11 +1,10 @@
 use crate::utils::channels::ChannelCreationRequest;
 use crate::utils::{extract_properties, validate_credential, extract_date, match_category};
-use bioenpro4to_channel_manager::channels::ChannelInfo;
 use crate::errors::ResponseError;
 use actix_web::web;
 use crate::environment::AppState;
 
-pub async fn create_daily_channel(request: ChannelCreationRequest, state: web::Data<AppState>) -> Result<ChannelInfo, ResponseError>{
+pub async fn create_daily_channel(request: ChannelCreationRequest, state: web::Data<AppState>) -> Result<(), ResponseError>{
     let cred = request.cred();
     let prop = extract_properties(cred)?;
 
@@ -22,7 +21,7 @@ pub async fn create_daily_channel(request: ChannelCreationRequest, state: web::D
     match root.new_daily_actor_channel(
         category, prop.actor_id(), &request.psw(),
         day, month, year).await{
-        Ok(ch) => Ok(ch.channel_info()),
+        Ok(_) => Ok(()),
         Err(e) => Err(ResponseError::Internal(e.to_string()))
     }
 }
