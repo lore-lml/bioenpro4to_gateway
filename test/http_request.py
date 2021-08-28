@@ -5,16 +5,16 @@ def main():
     url = "http://localhost:8000"
     headers = {
         "id": "D111",
-        "did": "did:iota:test:BG6DuW2ESTyvLR2CJA4GJAT53NfMJohZYjmfWRiGySeg",
-        "category": "biocells"
+        "did": "did:iota:test:DLkyWU3jJFgK81KUB3YaDqkwQGMcFNYXTBzj8R4Qhopr",
+        "psw": "ciao"
     }
-    res = req.get(f"{url}/id-manager/actor-nonce", headers=headers)
-    nonce = res.text
-    print(nonce)
+    res = req.get(f"{url}/id-manager/channel-credential", headers=headers)
+    cred = res.json()
+    print(cred)
 
-    # res = req.get(f"{url}/id-manager/is-credential-valid", json=cred)
-    # print(res.json())
-    #
+    res = req.get(f"{url}/id-manager/is-credential-valid", json=cred)
+    print(res.text)
+
     # json = {
     #     "cred": cred,
     #     "day_timestamp": int(time()),

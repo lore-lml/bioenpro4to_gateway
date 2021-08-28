@@ -4,7 +4,6 @@ use iota_identity_lib::api::{IdentityManager, Storage};
 use bioenpro4to_channel_manager::channels::ChannelInfo;
 use regex::Regex;
 use crate::utils::message_cache::MessageCache;
-use crate::utils::nonce_map::NonceMap;
 
 const DEFAULT_PSW: &str = "zH!rRAtmODw*W$k4%0MxuRez^BQQsp";
 
@@ -96,7 +95,6 @@ pub struct AppState{
     pub root: Mutex<RootChannel>,
     pub identity: Mutex<IdentityManager>,
     pub msg_cache: Mutex<MessageCache>,
-    pub nonce_map: Mutex<NonceMap>,
     pub config: EnvConfig,
 }
 
@@ -123,7 +121,6 @@ impl AppState{
             root: Mutex::new(root),
             identity: Mutex::new(identity),
             msg_cache: Mutex::new(MessageCache::new(config.mainnet, config.msgs_update_time)),
-            nonce_map: Mutex::new(NonceMap::new()),
             config
         };
         state.init(open).await?;

@@ -2,7 +2,6 @@ mod auth_info;
 pub mod credentials;
 pub mod channels;
 pub mod message_cache;
-pub mod nonce_map;
 
 pub use auth_info::AuthInfo;
 use iota_identity_lib::iota::Credential;
