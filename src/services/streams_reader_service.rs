@@ -1,13 +1,14 @@
 use actix_web::web;
 use crate::utils::match_category;
 use crate::environment::AppState;
-use bioenpro4to_channel_manager::channels::{ActorChannelInfo, DailyChannelInfo, ChannelInfo};
+use bioenpro4to_channel_manager::channels::{ActorChannelInfo, DailyChannelInfo};
 use crate::errors::ResponseError;
 use std::collections::HashMap;
 use serde_json::Value;
 use bioenpro4to_channel_manager::utils::{timestamp_to_date_string, current_time_secs};
+use crate::utils::actor_update::ActorUpdate;
 
-pub async fn actors_last_updates(count: u16, state: web::Data<AppState>) -> Result<Vec<HashMap<String, Value>>, ResponseError>{
+pub async fn actors_last_updates(count: u16, state: web::Data<AppState>) -> Result<Vec<ActorUpdate>, ResponseError>{
     let current_date = timestamp_to_date_string(current_time_secs(), false);
     let actors: Vec<ActorChannelInfo> = ["trucks", "weighing_scales", "biocells"].iter()
         .flat_map(|category| {
@@ -18,30 +19,37 @@ pub async fn actors_last_updates(count: u16, state: web::Data<AppState>) -> Resu
         .flat_map(|a| {
             channels_of_actor(a.category(), a.actor_id(), state.clone()).unwrap_or(vec![])
                 .into_iter().filter(|ch| ch.creation_date() == current_date)
-                .map(|ch| ch.address().clone())
-                .collect::<Vec<ChannelInfo>>()
+                .collect::<Vec<DailyChannelInfo>>()
         })
-        .collect::<Vec<ChannelInfo>>();
+        .collect::<Vec<DailyChannelInfo>>();
 
     let mut found = vec![];
     let mut cache = state.msg_cache.lock().unwrap();
-    for ch in daily_channels {
-        found.append( &mut cache.get(&ch.to_string()).await?);
+    for ch in &daily_channels {
+        let msgs = cache.get(&ch.address().to_string()).await?;
+        found.push((ch, msgs));
     }
 
     let mut found = found.into_iter()
-        .filter(|m| {
-            match m.get("timestamp"){
-                None => false,
-                Some(value) => value.as_i64().is_some()
-            }
+        .filter_map(|tuple| {
+            let info = tuple.0;
+            let mut vec = tuple.1.into_iter().filter(|m| {
+                match m.get("timestamp"){
+                    None => false,
+                    Some(value) => value.as_i64().is_some()
+                }
+            }).collect::<Vec<HashMap<String, Value>>>();
+            vec.sort_by_key(|map| map.get("timestamp").unwrap().as_i64().unwrap());
+            vec.pop().map_or(None, |value| {
+                let timestamp = value.get("timestamp").unwrap().as_i64().unwrap();
+                Some(ActorUpdate::new(info.actor_id(), info.category(), timestamp))
+            })
         })
-        .collect::<Vec<HashMap<String, Value>>>();
-    found.sort_by_key(|m| -m.get("timestamp").unwrap().as_i64().unwrap());
+        .collect::<Vec<ActorUpdate>>();
+    found.sort_by_key(|update| -update.timestamp());
     let found = found.into_iter()
         .take(count as usize)
-        .collect::<Vec<HashMap<String, Value>>>();
-
+        .collect::<Vec<ActorUpdate>>();
 
     Ok(found)
 }
