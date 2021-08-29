@@ -1,12 +1,16 @@
-use actix_web::{web, post, get, HttpResponse, Scope, ResponseError};
+use actix_web::{web, post, get, HttpResponse, Scope, HttpRequest, ResponseError as AWResponseError};
 
 use crate::services::{streams_writer_service, streams_reader_service};
 use crate::environment::AppState;
-use crate::utils::channels::ChannelCreationRequest;
+use crate::utils::channel_authorization::{ChannelAuthorization, DayTimestamp};
 use crate::controllers::Controller;
 use iota_identity_lib::iota::json;
 use std::collections::HashMap;
 use serde_json::Value;
+use deadpool_postgres::Pool;
+use crate::errors::ResponseError;
+use std::ops::Deref;
+use crate::utils::match_and_map_date_format;
 
 pub struct ChannelController;
 impl Controller for ChannelController{
@@ -22,18 +26,34 @@ impl Controller for ChannelController{
 }
 
 #[post("/daily-channel")]
-async fn create_daily_channel(body: web::Json<ChannelCreationRequest>,
-                                  data: web::Data<AppState>) -> HttpResponse{
-    match streams_writer_service::create_daily_channel(body.into_inner(), data).await{
+async fn create_daily_channel(req: HttpRequest,
+                              timestamp: web::Json<DayTimestamp>,
+                              data: web::Data<AppState>,
+                              pool: web::Data<Pool>) -> HttpResponse{
+    let ch_auth = match ChannelAuthorization::from_http_req_and_timestamp(req, timestamp.deref()){
+        None => return ResponseError::BadRequest("Wrong Auth header format".into()).error_response(),
+        Some(auth) => auth
+    };
+    match streams_writer_service::create_daily_channel(ch_auth, data, pool).await{
         Ok(_) => HttpResponse::Created().finish(),
         Err(err) => return err.error_response()
     }
 }
 
-#[get("/daily-channel")]
-async fn get_daily_channel(body: web::Json<ChannelCreationRequest>,
-                               data: web::Data<AppState>) ->  HttpResponse{
-    let base64 = match streams_writer_service::get_daily_channel(body.into_inner(), data).await{
+#[get("/daily-channel/{date}")]
+async fn get_daily_channel(req: HttpRequest,
+                           date: web::Path<String>,
+                           data: web::Data<AppState>,
+                           pool: web::Data<Pool>) ->  HttpResponse{
+    let date = match match_and_map_date_format(date.deref()){
+        Ok(date) => date,
+        Err(err) => return err.error_response()
+    };
+    let ch_auth = match ChannelAuthorization::from_http_req_and_date(req, &date){
+        None => return ResponseError::BadRequest("Wrong Auth header format".into()).error_response(),
+        Some(auth) => auth
+    };
+    let base64 = match streams_writer_service::get_daily_channel(ch_auth, data, pool).await{
         Ok(info) => info,
         Err(err) => return err.error_response()
     };
@@ -62,7 +82,6 @@ async fn channels_of_actor(params: web::Path<(String, String)>, state: web::Data
 #[get("/categories/{category}/actors/{actor_id}/date/{date}")]
 async fn messages_of_channel_of_actor(params: web::Path<(String, String, String)>, state: web::Data<AppState>) -> HttpResponse{
     let (category, actor_id, date) = params.into_inner();
-    let date = date.replace("-", "/");
     match streams_reader_service::messages_of_channel_of_actor(&category, &actor_id, &date, state).await{
         Ok(msgs) => HttpResponse::Found().json(&msgs),
         Err(err) => return err.error_response()

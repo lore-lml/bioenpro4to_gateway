@@ -1,5 +1,5 @@
 use actix_web::web;
-use crate::utils::match_category;
+use crate::utils::{match_category, match_and_map_date_format};
 use crate::environment::AppState;
 use bioenpro4to_channel_manager::channels::{ActorChannelInfo, DailyChannelInfo};
 use crate::errors::ResponseError;
@@ -67,6 +67,7 @@ pub fn channels_of_actor(category: &str, actor_id: &str, state: web::Data<AppSta
 }
 
 pub async fn messages_of_channel_of_actor(category: &str, actor_id: &str, date: &str, state: web::Data<AppState>) -> Result<Vec<HashMap<String, Value>>, ResponseError>{
+    let date = &match_and_map_date_format(date)?;
     let daily_ch_info = channels_of_actor(category, actor_id, state.clone())?;
     let selected_info = daily_ch_info.iter()
         .find(|ch| ch.creation_date() == date.to_string());
