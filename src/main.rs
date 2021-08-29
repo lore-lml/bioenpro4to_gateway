@@ -106,7 +106,6 @@ async fn main() -> Result<()> {
         for (scope, scope_name) in controllers {
             app = app.service(scope(scope_name));
         }
-
         app
     })
         .bind(binding_address)?

@@ -1,9 +1,10 @@
 use std::sync::Mutex;
 use bioenpro4to_channel_manager::channels::root_channel::RootChannel;
 use iota_identity_lib::api::{IdentityManager, Storage};
-use bioenpro4to_channel_manager::channels::ChannelInfo;
+use bioenpro4to_channel_manager::channels::{ChannelInfo, ActorChannelInfo, Category};
 use regex::Regex;
 use crate::utils::message_cache::MessageCache;
+use bioenpro4to_channel_manager::utils::{timestamp_to_date_string, current_time_secs};
 
 const DEFAULT_PSW: &str = "zH!rRAtmODw*W$k4%0MxuRez^BQQsp";
 
@@ -132,6 +133,9 @@ impl AppState{
         } else {
             self.root.lock().unwrap().channel_info()
         };
+
+        self.cache_daily_messages().await?;
+
         println!("Root Channel -> https://streams-chrysalis-explorer.netlify.app/channel/{}:{}?mainnet={}",
                  info.channel_id(), info.announce_id(), self.config.mainnet);
 
@@ -142,6 +146,34 @@ impl AppState{
         };
 
         println!("{} DID: {}", self.config.identity_issuer_name(), did);
+        Ok(())
+    }
+
+    async fn cache_daily_messages(&mut self) -> anyhow::Result<()>{
+        let current_date = timestamp_to_date_string(current_time_secs(), false);
+        println!("Caching Messages of date {}", current_date);
+        let root = self.root.lock().unwrap();
+        let actors: Vec<ActorChannelInfo> = [Category::Trucks, Category::Scales, Category::BioCells].iter()
+            .flat_map(|category| {
+                root.actors_of_category(category.clone())
+            }).collect();
+
+        let daily_channels = actors.iter()
+            .flat_map(|a| {
+                let category = Category::from_string(a.category()).unwrap();
+                root.channels_of_actor(category, a.actor_id())
+                    .into_iter().filter(|ch| ch.creation_date() == current_date)
+                    .map(|ch| ch.address().clone())
+                    .collect::<Vec<ChannelInfo>>()
+            })
+            .collect::<Vec<ChannelInfo>>();
+
+        let mut found = 0;
+        let mut cache = self.msg_cache.lock().unwrap();
+        for ch in daily_channels {
+            found += cache.get(&ch.to_string()).await?.len();
+        }
+        println!("  Caching complete: {} messages found", found);
         Ok(())
     }
 }

@@ -1,10 +1,12 @@
-use actix_web::{web, post, get, HttpResponse, ResponseError, Scope};
+use actix_web::{web, post, get, HttpResponse, Scope, ResponseError};
 
 use crate::services::{streams_writer_service, streams_reader_service};
 use crate::environment::AppState;
 use crate::utils::channels::ChannelCreationRequest;
 use crate::controllers::Controller;
 use iota_identity_lib::iota::json;
+use std::collections::HashMap;
+use serde_json::Value;
 
 pub struct ChannelController;
 impl Controller for ChannelController{
@@ -15,6 +17,7 @@ impl Controller for ChannelController{
             .service(actors_of_category)
             .service(channels_of_actor)
             .service(messages_of_channel_of_actor)
+            .service(actors_last_updates)
     }
 }
 
@@ -64,4 +67,23 @@ async fn messages_of_channel_of_actor(params: web::Path<(String, String, String)
         Ok(msgs) => HttpResponse::Found().json(&msgs),
         Err(err) => return err.error_response()
     }
+}
+
+#[get("/actors-last-updates/{count}")]
+async fn actors_last_updates(count: web::Path<String>, state: web::Data<AppState>) -> HttpResponse{
+    let count: u16 = match count.parse(){
+        Ok(count) => count,
+        Err(_) => return HttpResponse::BadRequest().body("Invalid parameter format last-updates/<count>")
+    };
+
+    if count == 0{
+        let empty: Vec<HashMap<String, Value>> = vec![];
+        return HttpResponse::Found().json(empty);
+    }
+
+    let updates = match streams_reader_service::actors_last_updates(count, state).await{
+        Ok(updates) => updates,
+        Err(err) => return err.error_response()
+    };
+    HttpResponse::Found().json(updates)
 }
