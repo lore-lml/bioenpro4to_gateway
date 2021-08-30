@@ -4,12 +4,12 @@ import json as js
 
 def main():
     url = "http://localhost:8000"
-    headers = {
+    json = {
         "id": "d111",
         "did": "did:iota:test:DLkyWU3jJFgK81KUB3YaDqkwQGMcFNYXTBzj8R4Qhopr",
         "psw": "ciao"
     }
-    res = req.get(f"{url}/id-manager/channel-credential", headers=headers)
+    res = req.post(f"{url}/id-manager/authenticate", json=json)
     cred = res.json()
     print(cred)
 

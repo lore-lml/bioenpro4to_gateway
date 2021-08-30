@@ -7,6 +7,7 @@ use deadpool_postgres::Pool;
 use crate::database::db::DBManager;
 
 pub async fn create_daily_channel(request: ChannelAuthorization, state: web::Data<AppState>, pool: web::Data<Pool>) -> Result<(), ResponseError>{
+    // TODO: update channel cache when new channels are created
     let db_manager = DBManager::new(pool);
     let cred = request.cred();
     let prop = extract_properties(cred)?;

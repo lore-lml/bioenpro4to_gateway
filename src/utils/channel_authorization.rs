@@ -3,12 +3,12 @@ use serde::{Serialize, Deserialize};
 use actix_web::HttpRequest;
 use chrono::NaiveDate;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DayTimestamp{
     day_timestamp: i64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ChannelAuthorization {
     cred: Credential,
     channel_psw: String,
