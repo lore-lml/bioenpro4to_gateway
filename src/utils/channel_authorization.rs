@@ -17,10 +17,10 @@ pub struct ChannelAuthorization {
 
 impl ChannelAuthorization {
     pub fn from_http_req_and_timestamp(req: HttpRequest, day_timestamp: &DayTimestamp) -> Option<Self>{
-        let cred = req.headers().get("cred")?.to_str().ok()?.to_owned();
+        let cred = req.headers().get("Cred")?.to_str().ok()?.to_owned();
         let cred = serde_json::from_str::<Credential>(&cred)
             .map_or(None, |c| Some(c))?;
-        let channel_psw = req.headers().get("channel_psw")?.to_str().ok()?.to_owned();
+        let channel_psw = req.headers().get("Channel-psw")?.to_str().ok()?.to_owned();
         let day_timestamp = day_timestamp.day_timestamp;
         Some(ChannelAuthorization{ cred, channel_psw, day_timestamp})
     }

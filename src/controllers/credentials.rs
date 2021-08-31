@@ -22,7 +22,7 @@ async fn get_credential(auth: web::Json<AuthInfo>, data: web::Data<AppState>, po
         Err(err) => return err.error_response()
     };
 
-    HttpResponse::Ok().json(cred)
+    HttpResponse::Created().json(cred)
 }
 
 #[get("/is-credential-valid")]

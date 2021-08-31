@@ -57,7 +57,7 @@ async fn get_daily_channel(req: HttpRequest,
         Ok(info) => info,
         Err(err) => return err.error_response()
     };
-    HttpResponse::Found().json(json!({
+    HttpResponse::Ok().json(json!({
         "channel_base64": &base64
     }))
 }
@@ -65,7 +65,7 @@ async fn get_daily_channel(req: HttpRequest,
 #[get("/categories/{category}/actors")]
 async fn actors_of_category(category: web::Path<String>, state: web::Data<AppState>) -> HttpResponse{
     match streams_reader_service::actors_of_category(&category, state){
-        Ok(actors) => HttpResponse::Found().json(&actors),
+        Ok(actors) => HttpResponse::Ok().json(&actors),
         Err(err) => return err.error_response()
     }
 }
@@ -74,7 +74,7 @@ async fn actors_of_category(category: web::Path<String>, state: web::Data<AppSta
 async fn channels_of_actor(params: web::Path<(String, String)>, state: web::Data<AppState>) -> HttpResponse{
     let (category, actor_id) = params.into_inner();
     match streams_reader_service::channels_of_actor(&category, &actor_id, state){
-        Ok(daily_ch) => HttpResponse::Found().json(&daily_ch),
+        Ok(daily_ch) => HttpResponse::Ok().json(&daily_ch),
         Err(err) => return err.error_response()
     }
 }
@@ -83,7 +83,7 @@ async fn channels_of_actor(params: web::Path<(String, String)>, state: web::Data
 async fn messages_of_channel_of_actor(params: web::Path<(String, String, String)>, state: web::Data<AppState>) -> HttpResponse{
     let (category, actor_id, date) = params.into_inner();
     match streams_reader_service::messages_of_channel_of_actor(&category, &actor_id, &date, state).await{
-        Ok(msgs) => HttpResponse::Found().json(&msgs),
+        Ok(msgs) => HttpResponse::Ok().json(&msgs),
         Err(err) => return err.error_response()
     }
 }
@@ -97,12 +97,12 @@ async fn actors_last_updates(count: web::Path<String>, state: web::Data<AppState
 
     if count == 0{
         let empty: Vec<HashMap<String, Value>> = vec![];
-        return HttpResponse::Found().json(empty);
+        return HttpResponse::Ok().json(empty);
     }
 
     let updates = match streams_reader_service::actors_last_updates(count, state).await{
         Ok(updates) => updates,
         Err(err) => return err.error_response()
     };
-    HttpResponse::Found().json(updates)
+    HttpResponse::Ok().json(updates)
 }
