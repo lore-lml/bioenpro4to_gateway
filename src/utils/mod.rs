@@ -31,6 +31,9 @@ pub async fn validate_credential(cred: &Credential, expected_did: &IotaDocument,
     if actor.category() != category {
         return Err(ResponseError::Unauthorized("Actor {} has a different category".into()))
     }
+    if actor.did().to_string() != prop.subject_did().to_string(){
+        return Err(ResponseError::Unauthorized("Actor {} has a different did".into()))
+    }
 
     // check if the credential is still valid
     match cred.expiration_date{

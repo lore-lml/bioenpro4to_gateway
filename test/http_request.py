@@ -24,7 +24,6 @@ def main():
     print(res.text)
 
     res = req.get(f"{url}/channel-manager/daily-channel/31-08-2021", headers=json)
-    print(res)
     print(res.text)
 
 if __name__ == '__main__':
