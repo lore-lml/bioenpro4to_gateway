@@ -514,7 +514,7 @@ dependencies = [
 [[package]]
 name = "bioenpro4to_channel_manager"
 version = "0.1.0"
-source = "git+https://github.com/lore-lml/bioenpro4to_channel_manager.git?branch=dev2#fb2ec0fcb4fee26192d863cf4f07718cea1182e3"
+source = "git+https://github.com/lore-lml/bioenpro4to_channel_manager.git#fb2ec0fcb4fee26192d863cf4f07718cea1182e3"
 dependencies = [
  "aead 0.4.3",
  "anyhow",

@@ -6,7 +6,7 @@ def main():
     url = "http://localhost:8000"
     json = {
         "id": "aa000aa",
-        "did": "did:iota:test:HRyXLr22JbT4VYczsFRB3p7T5xnHDReHU78d4Ns7RqAa",
+        "did": "did:iota:test:41PBxkDHNPcZzdnzu3AHdb8opEWJCMnmgDKQTjKBtd8y",
         "psw": "ciao"
     }
     res = req.post(f"{url}/id-manager/authenticate", json=json)
@@ -23,7 +23,7 @@ def main():
     res = req.post(f"{url}/channel-manager/daily-channel", headers=json, json={"day_timestamp": int(time())})
     print(res.text)
 
-    res = req.get(f"{url}/channel-manager/daily-channel/31-08-2021", headers=json)
+    res = req.get(f"{url}/channel-manager/daily-channel/03-09-2021", headers=json)
     print(res.text)
 
 if __name__ == '__main__':

@@ -1,0 +1,26 @@
+version: '1'
+
+services:
+  bep4t_server:
+    build: .
+    container_name: bioenpro4to_gateway
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    networks:
+      - bioenpro4to
+    depends_on:
+      - "bep4t_db"
+
+  bep4t_db:
+    build: db_docker_init/.
+    container_name: bioenpro4to_database
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    networks:
+      - bioenpro4to
+
+networks:
+  bioenpro4to:
+    external: false

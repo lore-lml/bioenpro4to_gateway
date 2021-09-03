@@ -1,0 +1,9 @@
+test
+**/*.md
+Cargo.lock
+.git
+.idea
+**/*.iml
+**/*.hodl
+target/**
+Dockerfile

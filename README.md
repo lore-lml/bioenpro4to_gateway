@@ -1,12 +1,15 @@
 # BioEnPro4TO - Gateway
 
 ## Usage
-Clone the repository:
+- Clone the repository:
 `git clone https://github.com/lore-lml/bioenpro4to_channel_manager.git`
-Then execute these instructions:
-- `cd db_docker_init`
-- `docker build -t bioenpro4to/postgres:0.1 .`
-- `docker run -d -p 5432:5432 --name postgres-bioenpro4to bioenpro4to/postgres:0.1`
-- `cd ..`
-- `cargo run`
+
+- Modify the INSERTS statements in `db_docker_init/sql/init_db.sql` file as needed:
+  - use `f91bad83ce31d38aa8fab39fbc3789b825bd67814f7b9994cdc3d062acfe6b34` in the password fields that is the hashed value of `ciao`
+  - provides valid dids for each actor
+
+- Modify the .env file as needed:
+  - `PG.HOST=bep4t_db` must not be changed for a working docker build
+
+- Run `docker compose up -d` in the root folder
 
