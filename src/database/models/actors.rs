@@ -22,6 +22,7 @@ pub struct Truck{
 #[derive(PostgresMapper, Serialize, Deserialize)]
 #[pg_mapper(table="bioenpro4to.scales")]
 pub struct Scale{
+    scale_id: String,
     plant: String,
 }
 

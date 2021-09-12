@@ -67,9 +67,10 @@ create table bioenpro4to.trucks
 
 create table bioenpro4to.scales
 (
+    scale_id varchar(200) not null,
     plant varchar(200) not null,
-    primary key(plant),
-    FOREIGN KEY(plant) REFERENCES bioenpro4to.actors(id)
+    primary key(scale_id),
+    FOREIGN KEY(scale_id) REFERENCES bioenpro4to.actors(id)
 );
 
 create table bioenpro4to.biocells
@@ -96,12 +97,12 @@ INSERT INTO bioenpro4to.users (id, psw, email, first_name, last_name, address, f
 
 INSERT INTO bioenpro4to.actors (id, psw, did, category) VALUES
     ('aa000aa', 'f91bad83ce31d38aa8fab39fbc3789b825bd67814f7b9994cdc3d062acfe6b34', 'did:iota:test:2GxszDLXHWs4kJgwbz1ch5Gwh4MBBwZxJyaU3Yf6bHij', 0),
-    ('CIDIU', 'f91bad83ce31d38aa8fab39fbc3789b825bd67814f7b9994cdc3d062acfe6b34', 'did:iota:test:H7PfugwjWzbexFES2t54tfEi2dmtQ9qEw6UZA8rPhmhg', 1),
-    ('d111', 'f91bad83ce31d38aa8fab39fbc3789b825bd67814f7b9994cdc3d062acfe6b34', 'did:iota:test:BG6DuW2ESTyvLR2CJA4GJAT53NfMJohZYjmfWRiGySeg', 2);
+    ('s111', 'f91bad83ce31d38aa8fab39fbc3789b825bd67814f7b9994cdc3d062acfe6b34', 'did:iota:test:H7PfugwjWzbexFES2t54tfEi2dmtQ9qEw6UZA8rPhmhg', 1),
+    ('b111', 'f91bad83ce31d38aa8fab39fbc3789b825bd67814f7b9994cdc3d062acfe6b34', 'did:iota:test:BG6DuW2ESTyvLR2CJA4GJAT53NfMJohZYjmfWRiGySeg', 2);
 
 INSERT INTO bioenpro4to.trucks(plate, driver) VALUES ('aa000aa', 'm111');
 
-INSERT INTO bioenpro4to.scales (plant) VALUES ('CIDIU');
+INSERT INTO bioenpro4to.scales (scale_id, plant) VALUES ('s111', 'CIDIU Druento');
 
-INSERT INTO bioenpro4to.biocells (digestor_id, plant, max_capacity) VALUES ('d111', 'CIDIU Druento', 2000);
+INSERT INTO bioenpro4to.biocells (digestor_id, plant, max_capacity) VALUES ('b111', 'CIDIU Druento', 2000);
 
