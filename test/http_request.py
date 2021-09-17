@@ -6,7 +6,7 @@ def main():
     url = "http://localhost:8000"
     json = {
         "id": "aa000aa",
-        "did": "did:iota:test:41PBxkDHNPcZzdnzu3AHdb8opEWJCMnmgDKQTjKBtd8y",
+        "did": "did:iota:dev:GC2VXM5A8CP5ozJ9R7iE8S7jrrpkSZGXmqe7NEs1Mg21",
         "psw": "ciao"
     }
     res = req.post(f"{url}/id-manager/authenticate", json=json)

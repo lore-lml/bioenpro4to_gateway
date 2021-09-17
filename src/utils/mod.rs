@@ -21,7 +21,7 @@ pub fn extract_properties(cred: &Credential) -> Result<CredentialProperties, Res
     }
 }
 
-pub async fn validate_credential(cred: &Credential, expected_did: &IotaDocument, db_manager: &DBManager) -> Result<(), ResponseError>{
+pub async fn validate_credential(cred: &Credential, expected_did: &IotaDocument, db_manager: &DBManager, mainnet: bool) -> Result<(), ResponseError>{
     let prop = CredentialProperties::from_credential(cred)
         .map_or(Err(ResponseError::BadRequest("Bad credential format".into())), |prop| Ok(prop))?;
 
@@ -46,7 +46,7 @@ pub async fn validate_credential(cred: &Credential, expected_did: &IotaDocument,
     };
 
     // validate the credential
-    let is_valid = match Validator::validate_credential(cred, expected_did.id()).await{
+    let is_valid = match Validator::validate_credential(cred, expected_did.id().as_str(), mainnet).await{
         Ok(res) => res,
         Err(_) => return Err(ResponseError::Internal("Error while validating credential".into()))
     };

@@ -16,7 +16,7 @@ pub async fn create_daily_channel(request: ChannelAuthorization, state: web::Dat
     let manager = state.identity.lock().unwrap();
     let mut root = state.root.lock().unwrap();
     let expected_did = manager.get_identity(state.config.identity_issuer_name()).unwrap();
-    validate_credential(cred, expected_did, &db_manager).await?;
+    validate_credential(cred, expected_did, &db_manager, state.config.is_main_net()).await?;
 
     // creating the daily channel with the specified date
     let (day, month, year) = extract_date(request.day_timestamp());
@@ -38,7 +38,7 @@ pub async fn get_daily_channel(request: ChannelAuthorization, state: web::Data<A
     let manager = state.identity.lock().unwrap();
     let mut root = state.root.lock().unwrap();
     let expected_did = manager.get_identity(state.config.identity_issuer_name()).unwrap();
-    validate_credential(cred, expected_did, &db_manager).await?;
+    validate_credential(cred, expected_did, &db_manager, state.config.is_main_net()).await?;
 
     // creating the daily channel with the specified date
     let (day, month, year) = extract_date(request.day_timestamp());

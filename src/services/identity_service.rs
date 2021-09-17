@@ -16,6 +16,7 @@ pub async fn get_credential(auth: AuthInfo, state: web::Data<AppState>, pool: we
         return Err(ResponseError::BadRequest("Wrong user_id or password".to_string()));
     }
     let actor_did = IotaDID::parse(auth.did()).map_err(|_| ResponseError::BadRequest("Wrong Did format".into()))?;
+
     if actor.did().to_string() != actor_did.to_string(){
         return Err(ResponseError::BadRequest(format!("The provided did doesn't correspond to the actor {}", actor.id())))
     }
@@ -45,7 +46,8 @@ pub async fn get_credential(auth: AuthInfo, state: web::Data<AppState>, pool: we
 pub async fn is_credential_valid(cred: Credential, state: web::Data<AppState>) -> Result<Value, ResponseError>{
     let manager = state.identity.lock().unwrap();
     let expected_did = manager.get_identity("santer reply").unwrap();
-    let validation = match Validator::validate_credential(&cred, expected_did.id()).await{
+    let mainnet = state.config.is_main_net();
+    let validation = match Validator::validate_credential(&cred, expected_did.id().as_str(), mainnet).await{
         Ok(res) => res,
         Err(_) => return Err(ResponseError::Internal("Something went wrong while validating".into())),
     };
