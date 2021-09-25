@@ -4,7 +4,7 @@ use crate::environment::AppState;
 use bioenpro4to_channel_manager::channels::{ActorChannelInfo, DailyChannelInfo};
 use crate::errors::ResponseError;
 use std::collections::HashMap;
-use serde_json::Value;
+use serde_json::{Value, Map};
 use bioenpro4to_channel_manager::utils::{timestamp_to_date_string, current_time_secs};
 use crate::utils::actor_update::ActorUpdate;
 
@@ -54,7 +54,24 @@ pub async fn actors_last_updates(count: u16, state: web::Data<AppState>) -> Resu
     Ok(found)
 }
 
-pub fn actors_of_category(category: &str, state: web::Data<AppState>) -> Result<Vec<ActorChannelInfo>, ResponseError>{
+pub fn actors_channel_info(category: &str, state: web::Data<AppState>) -> Result<Vec<Map<String, Value>>, ResponseError>{
+    let actors_info = actors_of_category(category, state.clone())?;
+    let mut counts = vec![];
+    for info in &actors_info {
+        counts.push(channels_of_actor(info.category(), info.actor_id(), state.clone())?.len());
+    }
+    let mut res = vec![];
+    for (info, count) in actors_info.iter().zip(counts){
+        let v = serde_json::to_value(info)
+            .map_err(|_| ResponseError::Internal("Error during serialization".to_string()))?;
+        let mut map = v.as_object().unwrap().clone();
+        map.insert("num_channels".to_string(), Value::from(count));
+        res.push(map)
+    }
+    Ok(res)
+}
+
+fn actors_of_category(category: &str, state: web::Data<AppState>) -> Result<Vec<ActorChannelInfo>, ResponseError>{
     let category = match_category(category)?;
     let root = state.root.lock().unwrap();
     Ok(root.actors_of_category(category.clone()))

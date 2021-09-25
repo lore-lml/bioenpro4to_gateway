@@ -64,7 +64,7 @@ async fn get_daily_channel(req: HttpRequest,
 
 #[get("/categories/{category}/actors")]
 async fn actors_of_category(category: web::Path<String>, state: web::Data<AppState>) -> HttpResponse{
-    match streams_reader_service::actors_of_category(&category, state){
+    match streams_reader_service::actors_channel_info(&category, state){
         Ok(actors) => HttpResponse::Ok().json(&actors),
         Err(err) => return err.error_response()
     }

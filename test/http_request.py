@@ -23,7 +23,7 @@ def main():
     res = req.post(f"{url}/channel-manager/daily-channel", headers=json, json={"day_timestamp": int(time())})
     print(res.text)
 
-    res = req.get(f"{url}/channel-manager/daily-channel/03-09-2021", headers=json)
+    res = req.get(f"{url}/channel-manager/daily-channel/23-09-2021", headers=json)
     print(res.text)
 
 if __name__ == '__main__':
